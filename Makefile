@@ -1,8 +1,12 @@
 TARGET = ./task.out
+SRC = ./3_1.cpp
 
-.PHONY: all build run clean
+.PHONY: all check build run clean
 
-all: build run clean
+all: check build run
+
+check:
+	./run_linters.sh $(SRC)
 
 build:
 	$(CXX) -g -fdiagnostics-color -Wall -Wextra -Werror -o $(TARGET) $(SRC)

@@ -7,92 +7,176 @@
 
 template <class T>
 class Array {
-public:
+ public:
     Array() = default;
     Array(const size_t n);
-    Array(const Array&) = delete;
-    ~Array();
 
-    Array& operator=(const Array&) = delete;
+    Array(const Array& other);
+    Array& operator=(const Array& other);
+
+    ~Array();
 
     T operator[](const size_t i) const;
     T& operator[](const size_t i);
 
-    size_t size() const { return length; }
-    T* get_pointer() const { return data; }
-    
-    void grow();
-    void add_elem(const T value);
+    size_t size() const { return data_size; }
 
-private:
+    void resize(const size_t new_size);
+
+ private:
     T* data = nullptr;
-    size_t length = 0;
-    size_t capacity = 0;
+    size_t data_size = 0;
 };
 
 
 template <class T>
 class Queue {
-public:
+ public:
     Queue() = default;
 
     void push_back(T value);
     T pop_front();
 
-    bool is_empty() const { return head == tail; }
+    bool is_empty() const { return head == tail && buffer.size() == 0; }
 
-private:
-    Array<T> data;
+ private:
+    Array<T> buffer;
 
-    size_t head;    
-    size_t tail;    
+    size_t head = 0;
+    size_t tail = 0;
+
+    void resize_buffer();
 };
 
 
-int main() {
-    Array<int> a(10);
-    a.grow();
-    std::cout << a.size();
 
-    std::vector<int> b(5);
-    b.size();
+int main() {
+    int operations_count;
+    std::cin >> operations_count;
+    Queue<int> queue;
+
+    for (int i = 0; i < operations_count; ++i) {
+        int choice;
+        std::cin >> choice;
+        int value;
+
+        switch (choice) {
+        case 2:
+            int test_value;
+            std::cin >> test_value;
+
+            if (queue.is_empty()) {
+                value = -1;
+            } else {
+                value = queue.pop_front();
+            }
+
+            if (value != test_value) {
+                std::cout << "NO";
+                return 0;
+            }
+            break;
+
+        case 3:
+            std::cin >> value;
+            queue.push_back(value);
+            break;
+
+        default:
+            break;
+        }
+    }
+    std::cout << "YES";
     return 0;
 }
 
 
+
 template <class T>
-Array<T>::Array(const size_t n): length(n), capacity(n) {
+Array<T>::Array(const size_t n): data_size(n) {
     data = new T[n];
     assert(data != nullptr);
 }
 
 template <class T>
+Array<T>& Array<T>::operator=(const Array& other) {
+    if (this != &other) {
+        delete[] data;
+        data = new T[other.size()];
+
+        std::copy(other.data, other.data + other.size(), data);
+        data_size = other.data_size;
+    }
+    return *this;
+}
+
+template <class T>
+Array<T>::Array(const Array& other) {
+    *this = other;
+}
+
+template <class T>
 Array<T>::~Array() {
-    assert(data != nullptr);
     delete[] data;
 }
 
 template <class T>
 T Array<T>::operator[](const size_t i) const {
-    assert(i < length);
+    assert(i < data_size);
     return data[i];
 }
 
 template <class T>
 T& Array<T>::operator[](const size_t i) {
-    assert(i < length);
+    assert(i < data_size);
     return data[i];
 }
 
 template <class T>
-void Array<T>::grow() {
-    size_t new_capacity = std::max(capacity * 2, (size_t) INIT_SIZE);
-
-    T* new_data = new T[new_capacity];
+void Array<T>::resize(const size_t new_size) {
+    T* new_data = new T[new_size];
     assert(new_data != nullptr);
-    
-    std::copy(data, data + length, new_data);
+
+    std::copy(data, data + std::min(data_size, new_size), new_data);
     delete[] data;
+
     data = new_data;
-    capacity = new_capacity;
+    data_size = new_size;
+}
+
+
+template <class T>
+void Queue<T>::push_back(T value) {
+    if (is_empty() || (head + 1) % buffer.size() == head) {
+        resize_buffer();
+    }
+
+    buffer[tail] = value;
+    tail = (tail + 1) % buffer.size();
+}
+
+template <class T>
+T Queue<T>::pop_front() {
+    assert(!is_empty());
+
+    T temp = buffer[head];
+    head = (head + 1) % buffer.size();
+
+    return temp;
+}
+
+template <class T>
+void Queue<T>::resize_buffer() {
+    Array<T> temp = buffer;
+
+    size_t new_buffer_size = std::max((size_t)INIT_SIZE, buffer.size() * 2);
+    buffer.resize(new_buffer_size);
+
+    for (size_t i = 0; i < new_buffer_size && head != tail; ++i) {
+        buffer[i] = temp[head];
+        head = (head + 1) % buffer.size();
+    }
+
+    head = 0;
+    tail = temp.size();
 }
