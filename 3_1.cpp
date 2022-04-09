@@ -11,7 +11,7 @@ class Array {
     Array() = default;
     Array(const size_t n);
 
-    Array(const Array& other);
+    explicit Array(const Array& other);
     Array& operator=(const Array& other);
 
     ~Array();
