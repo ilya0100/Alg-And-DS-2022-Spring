@@ -2,7 +2,7 @@
 #include <cassert>
 #include <algorithm>
 
-#define INIT_SIZE 40
+#define INIT_SIZE 4
 
 
 template <class T>
