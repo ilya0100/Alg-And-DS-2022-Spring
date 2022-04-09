@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
-#include <vector>
 
 #define INIT_SIZE 40
+
 
 template <class T>
 class Array {
@@ -22,6 +22,7 @@ class Array {
     size_t size() const { return data_size; }
 
     void resize(const size_t new_size);
+    void clear();
 
  private:
     T* data = nullptr;
@@ -37,7 +38,7 @@ class Queue {
     void push_back(T value);
     T pop_front();
 
-    bool is_empty() const { return head == tail && buffer.size() == 0; }
+    bool is_empty() const { return buffer.size() == 0; }
 
  private:
     Array<T> buffer;
@@ -144,10 +145,19 @@ void Array<T>::resize(const size_t new_size) {
     data_size = new_size;
 }
 
+template <class T>
+void Array<T>::clear() {
+    if (data_size != 0) {
+        delete[] data;
+        data = nullptr;
+        data_size = 0;
+    }
+}
+
 
 template <class T>
 void Queue<T>::push_back(T value) {
-    if (is_empty() || (head + 1) % buffer.size() == head) {
+    if (is_empty() || tail == head) {
         resize_buffer();
     }
 
@@ -162,6 +172,9 @@ T Queue<T>::pop_front() {
     T temp = buffer[head];
     head = (head + 1) % buffer.size();
 
+    if (head == tail) {
+        buffer.clear();
+    }
     return temp;
 }
 
@@ -174,7 +187,7 @@ void Queue<T>::resize_buffer() {
 
     for (size_t i = 0; i < new_buffer_size && head != tail; ++i) {
         buffer[i] = temp[head];
-        head = (head + 1) % buffer.size();
+        head = (head + 1) % temp.size();
     }
 
     head = 0;
