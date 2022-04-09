@@ -2,7 +2,7 @@
 #include <cassert>
 #include <algorithm>
 
-#define INIT_SIZE 4
+#define INIT_SIZE 40
 
 
 template <class T>
@@ -185,9 +185,13 @@ void Queue<T>::resize_buffer() {
     size_t new_buffer_size = std::max((size_t)INIT_SIZE, buffer.size() * 2);
     buffer.resize(new_buffer_size);
 
-    for (size_t i = 0; i < new_buffer_size && head != tail; ++i) {
+    for (size_t i = 0; i < temp.size(); ++i) {
         buffer[i] = temp[head];
         head = (head + 1) % temp.size();
+
+        if (head == tail) {
+            break;
+        }
     }
 
     head = 0;
