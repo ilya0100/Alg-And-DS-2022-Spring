@@ -55,6 +55,7 @@ int main() {
     int operations_count;
     std::cin >> operations_count;
     Queue<int> queue;
+    bool is_values_correct = true;
 
     for (int i = 0; i < operations_count; ++i) {
         int choice;
@@ -73,8 +74,7 @@ int main() {
             }
 
             if (value != test_value) {
-                std::cout << "NO";
-                return 0;
+                is_values_correct = false;
             }
             break;
 
@@ -87,7 +87,7 @@ int main() {
             break;
         }
     }
-    std::cout << "YES";
+    std::cout << (is_values_correct ? "YES" : "NO");
     return 0;
 }
 
