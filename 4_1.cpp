@@ -41,7 +41,13 @@ class IsLessDefault {
     bool operator()(const T& l, const T& r) const { return l < r; }
 };
 
-template <class T, class Compare = IsLessDefault<T>>
+template <class T>
+class IsMoreDefault {
+ public:
+    bool operator()(const T& l, const T& r) const { return l > r; }
+};
+
+template <class T, class Compare = IsLessDefault<T>()>
 class Heap {
  public:
     Heap(Compare cmp = IsLessDefault<T>()): cmp(cmp) {};
@@ -73,8 +79,10 @@ int main() {
         std::cin >> arr[i];
     }
 
-    Heap<int> h(arr);
+    Heap<int, IsMoreDefault<int>> h(arr, IsMoreDefault<int>());
     h.insert(3);
+    h.insert(12);
+    h.insert(20);
  
     return 0;
 }
@@ -194,10 +202,11 @@ T Heap<T, Compare>::pop() {
 
 template <class T, class Compare>
 void Heap<T, Compare>::build_heap() {
-    size_t i = buffer.size() / 2;
-    while (i > 0) {
-        --i;
+    for (size_t i = buffer.size() / 2 + 1; ; --i) {
         shift_down(i);
+        if (i == 0) {
+            break;
+        }
     }
 }
 
@@ -207,18 +216,17 @@ void Heap<T, Compare>::shift_down(size_t i) {
     size_t right = 0;
 
     while (left < buffer.size() || right < buffer.size()) {
-        left = 2 * i + 1;
-        right = 2 * i + 2;
+        size_t left = 2 * i + 1;
+        size_t right = 2 * i + 2;
         size_t largest = i;
 
-        if (left < buffer.size() && cmp(buffer[largest], buffer[left])) {
+        if (left < buffer.size() && cmp(buffer[left], buffer[largest])) {
             largest = left;
         }
-        if (right < buffer.size() && buffer[right] > buffer[largest]) {
-            largest = left;
+        if (right < buffer.size() && cmp(buffer[right], buffer[largest])) {
+            largest = right;
         }
         if (largest == i) { break; }
-
         std::swap(buffer[i], buffer[largest]);
         i = largest;
     }
