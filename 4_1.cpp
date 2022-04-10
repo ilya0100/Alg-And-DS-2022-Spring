@@ -21,7 +21,6 @@ class Array {
 
     size_t size() const { return data_size; }
 
-    void resize(const size_t new_size);
     void clear();
 
     void push_back(const T& value);
@@ -36,9 +35,19 @@ class Array {
 };
 
 template <class T>
-class IsLessDefault {
+struct Element {
+    T value;
+    size_t value_index;
+    size_t array_index;
+
+    Element(): value(0), value_index(0), array_index(0) {}
+    Element(T val, size_t val_i, size_t arr_i): value(val), value_index(val_i), array_index(arr_i) {}
+};
+
+template <class T>
+class IsMoreByElement {
  public:
-    bool operator()(const T& l, const T& r) const { return l < r; }
+    bool operator()(const Element<T>& l, const Element<T>& r) const { return l.value > r.value; }
 };
 
 template <class T>
@@ -47,16 +56,17 @@ class IsMoreDefault {
     bool operator()(const T& l, const T& r) const { return l > r; }
 };
 
-template <class T, class Compare = IsLessDefault<T>()>
+template <class T, class Compare = IsMoreDefault<T>>
 class Heap {
  public:
-    Heap(Compare cmp = IsLessDefault<T>()): cmp(cmp) {};
+    Heap(Compare cmp = (IsMoreDefault<T>())): cmp(cmp) {}
     explicit Heap(const Array<T>& arr,
-                  Compare cmp = IsLessDefault<T>()): buffer(arr), cmp(cmp) { build_heap(); }
+                  Compare cmp = (IsMoreDefault<T>())): buffer(arr), cmp(cmp) { build_heap(); }
 
     void insert(const T& element);
     T pop();
-    // T peek() const;
+
+    bool is_empty() const { return buffer.size() == 0; }
 
  private:
     Array<T> buffer;
@@ -68,22 +78,41 @@ class Heap {
 };
 
 
-int main() {
-    std::cout << "Enter size: " << std::endl;
-    size_t n;
-    std::cin >> n;
-
-    Array<int> arr(n);
-    std::cout << "Enter elements: " << std::endl;
-    for (size_t i = 0; i < n; ++i) {
-        std::cin >> arr[i];
+template <class T, class Compare>
+void merge_arrays(Array<Array<T>>& arrays, Heap<Element<T>, Compare>& merge_heap, std::ostream& output) {
+    for (size_t i = 0; i < arrays.size(); ++i) {
+        merge_heap.insert(Element<int>(arrays[i][0], 0, i));
     }
 
-    Heap<int, IsMoreDefault<int>> h(arr, IsMoreDefault<int>());
-    h.insert(3);
-    h.insert(12);
-    h.insert(20);
- 
+    while (!merge_heap.is_empty()) {
+        Element<T> temp = merge_heap.pop();
+        if (temp.value_index + 1 < arrays[temp.array_index].size()) {
+            merge_heap.insert(Element<T>(arrays[temp.array_index][temp.value_index + 1],
+                                         temp.value_index + 1, temp.array_index));
+        }
+        output << temp.value << " ";
+    }
+}
+
+
+
+int main() {
+    size_t k;
+    std::cin >> k;
+    Array<Array<int>> arrays(k);
+
+    for (size_t i = 0; i < k; ++i) {
+        size_t array_size;
+        std::cin >> array_size;
+        for (size_t j = 0; j < array_size; ++j) {
+            int temp;
+            std::cin >> temp;
+            arrays[i].push_back(temp);
+        }
+    }
+    Heap<Element<int>, IsMoreByElement<int>> merge_heap((IsMoreByElement<int>()));
+
+    merge_arrays(arrays, merge_heap, std::cout);
     return 0;
 }
 
@@ -130,24 +159,12 @@ T& Array<T>::operator[](const size_t i) {
 }
 
 template <class T>
-void Array<T>::resize(const size_t new_size) {
-    T* new_data = new T[new_size];
-    assert(new_data != nullptr);
-
-    std::copy(data, data + std::min(data_size, new_size), new_data);
-    delete[] data;
-
-    data = new_data;
-    data_size = new_size;
-    capacity = new_size;
-}
-
-template <class T>
 void Array<T>::clear() {
     if (data_size != 0) {
         delete[] data;
         data = nullptr;
         data_size = 0;
+        capacity = 0;
     }
 }
 
@@ -164,7 +181,7 @@ void Array<T>::push_back(const T& value) {
 template <class T>
 T Array<T>::pop_back() {
     assert(data_size != 0);
-    return data[data_size--];
+    return data[--data_size];
 }
 
 template <class T>
@@ -177,7 +194,7 @@ void Array<T>::grow() {
     delete[] data;
 
     data = new_data;
-    capacity = new_capacity;    
+    capacity = new_capacity;
 }
 
 
@@ -189,13 +206,15 @@ void Heap<T, Compare>::insert(const T& element) {
 
 template <class T, class Compare>
 T Heap<T, Compare>::pop() {
-    assert(buffer.data_size != 0);
+    assert(buffer.size() != 0);
 
     T result = buffer[0];
     buffer[0] = buffer.pop_back();
 
-    if (buffer.data_size != 0) {
+    if (buffer.size() != 0) {
         shift_down(0);
+    } else {
+        buffer.clear();
     }
     return result;
 }
@@ -216,14 +235,14 @@ void Heap<T, Compare>::shift_down(size_t i) {
     size_t right = 0;
 
     while (left < buffer.size() || right < buffer.size()) {
-        size_t left = 2 * i + 1;
-        size_t right = 2 * i + 2;
+        left = 2 * i + 1;
+        right = 2 * i + 2;
         size_t largest = i;
 
-        if (left < buffer.size() && cmp(buffer[left], buffer[largest])) {
+        if (left < buffer.size() && cmp(buffer[largest], buffer[left])) {
             largest = left;
         }
-        if (right < buffer.size() && cmp(buffer[right], buffer[largest])) {
+        if (right < buffer.size() && cmp(buffer[largest], buffer[right])) {
             largest = right;
         }
         if (largest == i) { break; }
@@ -236,7 +255,7 @@ template <class T, class Compare>
 void Heap<T, Compare>::shift_up(size_t i) {
     while (i > 0) {
         size_t parent = (i - 1) / 2;
-        if (buffer[i] < buffer[parent]) {
+        if (cmp(buffer[i], buffer[parent])) {
             return;
         }
         std::swap(buffer[i], buffer[parent]);

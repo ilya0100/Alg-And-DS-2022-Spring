@@ -1,3 +1,6 @@
+/*  Реализовать очередь с динамическим зацикленным буфером.
+    Обрабатывать команды push back и pop front. */
+
 #include <iostream>
 #include <cassert>
 #include <algorithm>
@@ -180,7 +183,7 @@ T Queue<T>::pop_front() {
 
 template <class T>
 void Queue<T>::resize_buffer() {
-    Array<T> temp = buffer;
+    Array<T> temp(buffer);
 
     size_t new_buffer_size = std::max((size_t)INIT_SIZE, buffer.size() * 2);
     buffer.resize(new_buffer_size);
