@@ -1,6 +1,10 @@
+/*  Напишите программу, которая использует кучу для слияния K отсортированных массивов суммарной длиной N.
+    Требования: время работы O(N * logK). Ограничение на размер кучи O(K). */
+
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <sstream>
 
 #define INIT_SIZE 40
 
@@ -96,23 +100,89 @@ void merge_arrays(Array<Array<T>>& arrays, Heap<Element<T>, Compare>& merge_heap
 
 
 
-int main() {
+int run(std::istream& input, std::ostream& output) {
     size_t k;
-    std::cin >> k;
+    input >> k;
     Array<Array<int>> arrays(k);
 
     for (size_t i = 0; i < k; ++i) {
         size_t array_size;
-        std::cin >> array_size;
+        input >> array_size;
         for (size_t j = 0; j < array_size; ++j) {
             int temp;
-            std::cin >> temp;
+            input >> temp;
             arrays[i].push_back(temp);
         }
     }
     Heap<Element<int>, IsMoreByElement<int>> merge_heap((IsMoreByElement<int>()));
 
-    merge_arrays(arrays, merge_heap, std::cout);
+    merge_arrays(arrays, merge_heap, output);
+    return 0;
+}
+
+
+void run_tests() {
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "3 1 6 2 50 90 3 1 10 70";
+        run(input, output);
+        assert(output.str() == "1 6 10 50 70 90 ");
+    }
+    {
+        // один массив
+        std::stringstream input;
+        std::stringstream output;
+        input << "1 5 6 8 30 50 55";
+        run(input, output);
+        assert(output.str() == "6 8 30 50 55 ");
+    }
+    {
+        // все элементы следующего массива больше элементов предыдущего
+        std::stringstream input;
+        std::stringstream output;
+        input << "3 3 6 8 10 4 15 22 29 30 2 50 70";
+        run(input, output);
+        assert(output.str() == "6 8 10 15 22 29 30 50 70 ");
+    }
+    {
+        // аналогично, но массивы считываются в другом порядке
+        std::stringstream input;
+        std::stringstream output;
+        input << "3 4 15 22 29 30 3 6 8 10 2 50 70";
+        run(input, output);
+        assert(output.str() == "6 8 10 15 22 29 30 50 70 ");
+    }
+    {
+        // элементы первого массива должны находиться между элементами второго
+        std::stringstream input;
+        std::stringstream output;
+        input << "2 5 2 4 6 8 10 5 1 3 5 7 9";
+        run(input, output);
+        assert(output.str() == "1 2 3 4 5 6 7 8 9 10 ");
+    }
+    {
+        // 6 массивов с одним элементом
+        std::stringstream input;
+        std::stringstream output;
+        input << "6 1 3 1 2 1 7 1 9 1 5 1 13";
+        run(input, output);
+        assert(output.str() == "2 3 5 7 9 13 ");
+    }
+    {
+        // повторяющиеся элементы
+        std::stringstream input;
+        std::stringstream output;
+        input << "3 3 1 5 10 2 5 7 5 7 8 9 10 15";
+        run(input, output);
+        assert(output.str() == "1 5 5 7 7 8 9 10 10 15 ");
+    }
+}
+
+
+int main() {
+    run(std::cin, std::cout);
+    // run_tests();
     return 0;
 }
 
