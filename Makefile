@@ -9,7 +9,7 @@ check:
 	./run_linters.sh $(SRC)
 
 build:
-	$(CXX) -g -fdiagnostics-color -Wall -Wextra -Werror -o $(TARGET) $(SRC)
+	$(CXX) -g -fdiagnostics-color -Wall -Wextra -Werror -std=c++17 -o $(TARGET) $(SRC)
 
 run:
 	$(TARGET)

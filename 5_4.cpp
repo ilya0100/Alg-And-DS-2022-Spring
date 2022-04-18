@@ -38,11 +38,9 @@ void merge_two_arrays(T* l, const size_t l_size, T* r, const size_t r_size,
 
     while (l_it < l_size && r_it < r_size) {
         if (cmp(r[r_it], l[l_it])) {
-            dest[dest_it++] = r[r_it];
-            ++r_it;
+            dest[dest_it++] = r[r_it++];
         } else {
-            dest[dest_it++] = l[l_it];
-            ++l_it;
+            dest[dest_it++] = l[l_it++];
         }
     }
     while (l_it < l_size) {
