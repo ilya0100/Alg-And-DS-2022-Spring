@@ -1,5 +1,5 @@
 TARGET = ./task.out
-SRC = ./6_2.cpp
+SRC = ./7_3.cpp
 
 .PHONY: all check build run clean
 
