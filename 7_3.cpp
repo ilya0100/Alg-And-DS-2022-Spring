@@ -6,6 +6,7 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <string.h>
 
 
 
@@ -43,6 +44,33 @@ void binary_quick_sort(unsigned long long* arr, int size, int bit_num = 63) {
     if (part + 1 < size) {
         binary_quick_sort(arr + part, size - part, bit_num - 1);
     }
+}
+
+
+void counting_sort(unsigned long long* arr, int size) {
+    unsigned long long max = arr[0];
+    for (int i = 1; i < size; ++i) {
+        max = std::max(max, arr[i]);
+    }
+
+    int* c = new int[max];
+    memset(c, max, sizeof(int));
+    for (int i = 0; i < size; ++i) {
+        ++c[arr[i]];
+    }
+
+    for (int i = 1; i < max; ++i) {
+        c[i] += c[i - 1];
+    }
+
+    unsigned long long* b = new unsigned long long[size];
+    for (int i = size - 1; i >= 0; --i) {
+        b[--c[arr[i]]] = arr[i];
+    }
+    std::copy(b, b + size, arr);
+    
+    delete[] b;
+    delete[] c;
 }
 
 
