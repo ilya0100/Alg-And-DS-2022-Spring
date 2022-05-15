@@ -11,6 +11,7 @@
 */
 
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <vector>
 #include <string>
@@ -46,7 +47,7 @@ class HashTable {
     bool add(const std::string& key);
     bool del(const std::string& key);
 
-    // void print_table() const;
+    void print_table() const;
 
  private:
     enum class CellState {
@@ -99,10 +100,11 @@ void run_test() {
         std::stringstream output;
         input << "+ hello\n+ bye\n? bye\n+ bye\n- bye\n? bye\n? hello";
         run(input, output);
+
         std::cout << "***** Test 1: *****" << std::endl;
         std::cout << output.str() << std::endl;
         assert(output.str() == "OK\nOK\nOK\nFAIL\nOK\nFAIL\nOK\n");
-        std::cout << "***** Sucess *****\n" << std::endl;
+        std::cout << "***** Success *****\n" << std::endl;
     }
     {
         std::stringstream input;
@@ -111,17 +113,50 @@ void run_test() {
             input << "+ " << i << std::endl;
         }
         run(input, output);
+
         std::cout << "***** Test 2: *****" << std::endl;
         std::cout << output.str() << std::endl;
         assert(output.str() == "OK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n");
-        std::cout << "***** Sucess *****\n" << std::endl;
+        std::cout << "***** Success *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        for (int i = 0; i < 5; ++i) {
+            input << "+ " << i << std::endl;
+        }
+        for (int i = 0; i < 5; ++i) {
+            input << "- " << i << std::endl;
+        }
+        run(input, output);
+
+        std::cout << "***** Test 3: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+        assert(output.str() == "OK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n");
+        std::cout << "***** Success *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        int n = 25;
+        for (int i = 0; i < n; ++i) {
+            input << "+ " << i << std::endl;
+        }
+        for (int i = 0; i < n; ++i) {
+            input << "- " << i << std::endl;
+        }
+        run(input, output);
+
+        std::cout << "***** Test 4: *****" << std::endl;
+        assert(output.str().find("FAIL") == std::string::npos);
+        std::cout << "***** Success *****\n" << std::endl;
     }
 }
 
 
 int main() {
-    // run(std::cin, std::cout);
-    run_test();
+    run(std::cin, std::cout);
+    // run_test();
     return 0;
 }
 
@@ -130,7 +165,7 @@ int main() {
 template <typename H>
 bool HashTable<H>::has(const std::string& key) const {
     unsigned int hash = hasher(key);
-    unsigned int second_hash = second_hasher(key) * 2 + 1;
+    unsigned int second_hash = second_hasher(key);
 
     for (unsigned int i = 0; i < table.size(); ++i) {
         unsigned int general_hash = (hash + second_hash * i) % table.size();
@@ -153,7 +188,7 @@ bool HashTable<H>::add(const std::string& key) {
     }
 
     unsigned int hash = hasher(key);
-    unsigned int second_hash = second_hasher(key) * 2 + 1;
+    unsigned int second_hash = second_hasher(key);
     unsigned int first_del = hash % table.size();
 
     for (unsigned int i = 0; i < table.size(); ++i) {
@@ -163,6 +198,7 @@ bool HashTable<H>::add(const std::string& key) {
             if (table[first_del].state == CellState::deleted) {
                 general_hash = first_del;
             }
+
             table[general_hash].state = CellState::key;
             table[general_hash].hash = hash;
             table[general_hash].key = key;
@@ -190,7 +226,7 @@ bool HashTable<H>::del(const std::string& key) {
     }
 
     unsigned int hash = hasher(key);
-    unsigned int second_hash = second_hasher(key) * 2 + 1;
+    unsigned int second_hash = second_hasher(key);
 
     for (unsigned int i = 0; i < table.size(); ++i) {
         unsigned int general_hash = (hash + second_hash * i) % table.size();
@@ -211,13 +247,29 @@ bool HashTable<H>::del(const std::string& key) {
 
 template <typename H>
 void HashTable<H>::rehash(size_t table_size) {
+    // std::cout << "before rehash:" << std::endl;
+    // print_table();
+
     std::vector<TableCell> new_table(table_size);
     for (size_t i = 0; i < table.size(); ++i) {
         if (table[i].state == CellState::key) {
-            new_table[table[i].hash % new_table.size()] = table[i];
+            for (unsigned int j = 0; j < new_table.size(); ++j) {
+                unsigned int second_hash = second_hasher(table[i].key);
+                unsigned int general_hash = (table[i].hash + second_hash * j) % new_table.size();
+
+                if (new_table[general_hash].state == CellState::empty) {
+                    new_table[general_hash] = table[i];
+                    break;
+                }
+            }
         }
     }
+    dels_count = 0;
     table = std::move(new_table);
+
+    // std::cout << "after rehash:" << std::endl;
+    // print_table();
+    // std::cout << std::endl;
 }
 
 template <typename H>
@@ -227,14 +279,35 @@ unsigned int HashTable<H>::second_hasher(const std::string& key) {
     for (int i = 0; i < 5 && it != key.end(); ++it, ++i) {
         hash = hash * 137 + *it;
     }
-    return hash;
+    return hash * 2 + 1;
 }
 
-// template <typename H>
-// void HashTable<H>::print_table() const {
-//     for (size_t i = 0; i < table.size(); ++i) {
-//         if (table[i].state == CellState::key) {
-//             std::cout << table[i].key << std::endl;
-//         }
-//     }
-// }
+template <typename H>
+void HashTable<H>::print_table() const {
+    std::cout << "|";
+    for (size_t i = 0; i < table.size(); ++i) {
+        switch (table[i].state) {
+        case CellState::empty:
+            std::cout << " E |";
+            break;
+
+        case CellState::key:
+            std::cout << " K |";
+            break;
+
+        case CellState::deleted:
+            std::cout << " D |";
+            break;
+
+        default:
+            std::cout << " ? |";
+            break;
+        }
+    }
+    std::cout << std::endl;
+    std::cout << "|";
+    for (size_t i = 0; i < table.size(); ++i) {
+        std::cout << std::setw(3) << table[i].key << "|";
+    }
+    std::cout << std::endl;
+}
