@@ -2,4 +2,4 @@
 *.out
 *.txt
 test.cpp
-/build
+build/
