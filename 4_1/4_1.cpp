@@ -116,6 +116,110 @@ void run_test() {
 
         std::cout << "***** Sucess *****\n" << std::endl;
     }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "7 1 150 1 130 1 170 1 100 1 140 1 90 1 120";
+        run(input, output);
+
+        std::cout << "***** Test 2: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 0 3 2 5 4 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "10 1 1 1 2 1 3 1 4 1 5 1 6 1 7 1 8 1 9 1 10";
+        run(input, output);
+
+        std::cout << "***** Test 3: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 0 0 0 0 0 0 0 0 0 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "10 1 10 1 9 1 8 1 7 1 6 1 5 1 4 1 3 1 2 1 1";
+        run(input, output);
+
+        std::cout << "***** Test 4: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 2 3 4 5 6 7 8 9 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "7 1 150 1 130 1 170 1 100 1 140 2 140 1 145";
+        run(input, output);
+
+        std::cout << "***** Test 5: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 0 3 2 2 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "8 1 150 1 130 1 170 1 100 1 140 2 150 1 110 1 150";
+        run(input, output);
+
+        std::cout << "***** Test 6: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 0 3 2 3 1 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "7 1 150 1 170 1 120 1 110 1 140 1 145 1 130";
+        run(input, output);
+
+        std::cout << "***** Test 7: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 0 2 3 2 2 4 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "7 1 130 1 110 1 160 1 170 1 150 1 155 1 140";
+        run(input, output);
+
+        std::cout << "***** Test 8: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 0 0 2 2 4 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "6 1 150 1 90 1 140 1 130 1 120 1 110";
+        run(input, output);
+
+        std::cout << "***** Test 9: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 1 1 2 3 4 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
 }
 
 
@@ -271,15 +375,12 @@ int AVLTree<T, Compare>::find_pos(const T& key) {
     while (temp != nullptr) {
         if (_cmp(key, temp->key)) {
             temp = temp->left;
-        } else if (_cmp(temp->key, key)) {
+        } else {
             if (temp->left != nullptr) {
                 pos -= temp->left->nodes_count;
             }
             --pos;
             temp = temp->right;
-        } else {
-            --pos;
-            break;
         }
     }
     return pos;
