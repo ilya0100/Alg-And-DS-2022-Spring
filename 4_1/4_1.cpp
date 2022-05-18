@@ -224,8 +224,8 @@ void run_test() {
 
 
 int main() {
-    run(std::cin, std::cout);
-    // run_test();
+    // run(std::cin, std::cout);
+    run_test();
     return 0;
 }
 
@@ -254,7 +254,6 @@ void AVLTree<T, Compare>::delete_tree(TreeNode *&node) {
     delete_tree(node->left);
     delete_tree(node->right);
     delete node;
-    node = nullptr;
 }
 
 template <typename T, typename Compare>

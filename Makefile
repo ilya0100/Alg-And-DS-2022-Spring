@@ -1,15 +1,18 @@
 TARGET = ./task.out
-SRC = ./4_1/4_1.cpp
+SRCS = ./haffman/Huffman.cpp
+HDRS = /haffman/Huffman.h
 
 .PHONY: all check build run clean
 
 all: check build run
 
 check:
-	./run_linters.sh $(SRC)
+	./run_linters.sh $(SRCS)
 
-build:
-	$(CXX) -g -fdiagnostics-color -Wall -Wextra -Werror -std=c++17 -o $(TARGET) $(SRC)
+build: $(TARGET)
+
+$(TARGET): $(SRCS)
+	$(CXX) -std=c++17 -g -fdiagnostics-color -O0 -Wall -Wextra -I $(HDRS) -o $(TARGET) $(SRCS)
 
 run:
 	$(TARGET)
