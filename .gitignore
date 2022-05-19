@@ -3,3 +3,4 @@
 *.txt
 test.cpp
 build/
+temp.cpp

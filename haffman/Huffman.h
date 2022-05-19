@@ -18,6 +18,8 @@ public:
 
 	virtual bool Read( unsigned char& value );
 
+	std::vector<unsigned char> get_body() const { return body; }
+	
 private:
 	unsigned int index;
 	const std::vector<unsigned char>& body;
@@ -39,6 +41,8 @@ class COutputStream : public IOutputStream {
 public:
 	COutputStream( std::vector<unsigned char>& _body ) : body( _body ) { body.clear(); }
 	virtual void Write( unsigned char value ) { body.push_back( value ); }
+
+	std::vector<unsigned char> get_body() const { return body; }
 
 private:
 	std::vector<unsigned char>& body;
