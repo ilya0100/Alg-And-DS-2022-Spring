@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <queue>
 #include <stack>
-#include <ctime>
-
+#include <cassert>
 
 
 class OutBitStream {
@@ -98,7 +97,7 @@ void Encode(CInputStream& original, COutputStream& compressed) {
 	code.build_tree(frequencies);
 	std::vector<unsigned char> tree = code.serialize();
 
-    compressed.Write(tree.size());
+    compressed.Write(static_cast<unsigned char>(tree.size()));
 	for (size_t i = 0; i < tree.size(); ++i) {
 		compressed.Write(tree[i]);
 	}
@@ -258,7 +257,7 @@ void HaffmanCode::deserialize(std::vector<unsigned char>& buffer) {
 std::vector<unsigned char> HaffmanCode::decode_data(std::vector<unsigned char>& data,
                                                     unsigned char filling_size) const {
     InBitStream stream(data);
-    size_t data_size = data.size() - filling_size;
+    size_t data_size = data.size() * 8 - filling_size;
     std::vector<unsigned char> decoded;
 
     Node* node = _root;
@@ -404,10 +403,12 @@ int main() {
 		std::cout << std::endl;
 	}
     {
+		std::cout << "***** Test1: *****" << std::endl;
+
         std::string test_text = "Just text to test Haffman algorithm";
         std::vector<unsigned char> buffer;
         for (size_t i = 0; i < test_text.size(); ++i) {
-            buffer[i] = test_text[i];
+            buffer.push_back(test_text[i]);
         }
 
         CInputStream encode_in(buffer);
@@ -415,7 +416,8 @@ int main() {
         COutputStream encode_out(temp);
         Encode(encode_in, encode_out);
 
-        CInputStream decode_in(encode_out.get_body());
+        buffer = encode_out.get_body();
+        CInputStream decode_in(buffer);
         COutputStream decode_out(temp);
         Decode(decode_in, decode_out);
 
@@ -424,6 +426,41 @@ int main() {
         for (size_t i = 0; i < decoded.size(); ++i) {
             decoded_str.push_back(decoded[i]);
         }
-        std::cout << decoded_str;
+
+        std::cout << decoded_str << std::endl;
+        std::cout << buffer.size() / encode_out.get_body().size() << std::endl;
+
+        assert(test_text == decoded_str);
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+		std::cout << "***** Test2: *****" << std::endl;
+
+        std::vector<unsigned char> test_data;
+		std::srand(10);
+        for (size_t i = 0; i < 50; ++i) {
+            test_data.push_back(std::rand() % 30);
+        }
+
+        CInputStream encode_in(test_data);
+        std::vector<unsigned char> temp;
+        COutputStream encode_out(temp);
+        Encode(encode_in, encode_out);
+
+        std::vector<unsigned char> buffer = encode_out.get_body();
+        CInputStream decode_in(buffer);
+        COutputStream decode_out(temp);
+        Decode(decode_in, decode_out);
+
+        std::vector<unsigned char> decoded = decode_out.get_body();
+        std::string decoded_str;
+        for (size_t i = 0; i < decoded.size(); ++i) {
+            decoded_str.push_back(decoded[i]);
+        }
+
+        std::cout << buffer.size() / encode_out.get_body().size() << std::endl;
+        assert(test_data == decoded);
+
+        std::cout << "***** Sucess *****\n" << std::endl;
     }
 }
