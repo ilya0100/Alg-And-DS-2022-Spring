@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <queue>
 #include <stack>
+#include <ctime>
 
 
 
@@ -39,7 +40,7 @@ private:
 
 class HaffmanCode {
  public:
-	HaffmanCode(): _root(nullptr) {}
+	HaffmanCode(): _root(nullptr), char_count(0) {}
 
 	HaffmanCode(const HaffmanCode& other) = delete;
 	HaffmanCode& operator=(const HaffmanCode& other) = delete;
@@ -50,7 +51,7 @@ class HaffmanCode {
 	std::vector<std::vector<unsigned char>> get_table();
 
 	std::vector<unsigned char> serialize();
-	void deserialize(const std::vector<unsigned char>& stream, unsigned char bits_count);
+	void deserialize(std::vector<unsigned char>& buffer);
 
  private:
 	struct Node {
@@ -89,8 +90,14 @@ void Encode(CInputStream& original, COutputStream& compressed) {
 		++frequencies[byte];
 		stream.push_back(byte);
 	}
-	HaffmanCode codes;
-	codes.build_tree(frequencies);
+	HaffmanCode code;
+	code.build_tree(frequencies);
+	std::vector<unsigned char> tree = code.serialize();
+	for (size_t i = 0; i < tree.size(); ++i) {
+		compressed.Write(tree[i]);
+	}
+
+	std::vector<std::vector<unsigned char>> table = code.get_table();
 }
 
 void Decode(CInputStream& compressed, COutputStream& original) {
@@ -169,6 +176,11 @@ void HaffmanCode::serialize_tree(Node* node, OutBitStream& stream) {
 	serialize_tree(node->left, stream);
 	serialize_tree(node->right, stream);
 	stream.WriteBit(0);
+}
+
+void HaffmanCode::deserialize(std::vector<unsigned char>& buffer) {
+	InBitStream stream(buffer);
+	deserialize_tree(_root, stream);
 }
 
 void HaffmanCode::deserialize_tree(Node* node, InBitStream& stream) {
@@ -271,14 +283,16 @@ unsigned char InBitStream::ReadByte() {
 int main() {
 	{
 		std::cout << "***** Tree and table test *****" << std::endl;
-		std::vector<size_t> frequencies(8);
-		for (unsigned char i = 1; i < 6; ++i) {
-			frequencies[i] = i;
+		
+		std::vector<size_t> frequencies(10);
+		std::srand(std::time(nullptr));
+		for (unsigned char i = 1; i < 8; ++i) {
+			frequencies[i] = std::rand() % 10;
 		}
-		HaffmanCode codes;
-		codes.build_tree(frequencies);
+		HaffmanCode encode;
+		encode.build_tree(frequencies);
 
-		std::vector<std::vector<unsigned char>> table = codes.get_table();
+		std::vector<std::vector<unsigned char>> table = encode.get_table();
 		for (size_t i = 0; i < table.size(); ++i) {
 			if (table[i].size() != 0) {
 				std::cout << i << ": ";
@@ -293,7 +307,7 @@ int main() {
 
 		std::cout << "***** Serialize tree test *****" << std::endl;
 
-		std::vector<unsigned char> serialized_tree = codes.serialize();
+		std::vector<unsigned char> serialized_tree = encode.serialize();
 		for (size_t i = 0; i < serialized_tree.size(); ++i) {
 			std::bitset<8> bits(serialized_tree[i]);
 			std::cout << bits << "|";
@@ -316,6 +330,25 @@ int main() {
 			}
 		}
 		std::cout << std::endl;
+
+		std::cout << "**********" << std::endl;
+		std::cout << std::endl;
+
+		std::cout << "***** Deserialize tree test *****" << std::endl;
+
+		HaffmanCode decode;
+		decode.deserialize(serialized_tree);
+
+		std::vector<std::vector<unsigned char>> decoded_table = encode.get_table();
+		for (size_t i = 0; i < decoded_table.size(); ++i) {
+			if (decoded_table[i].size() != 0) {
+				std::cout << i << ": ";
+				for (size_t j = 0; j < decoded_table[i].size(); ++j) {
+					std::cout << static_cast<int>(decoded_table[i][j]) << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
 
 		std::cout << "**********" << std::endl;
 		std::cout << std::endl;
