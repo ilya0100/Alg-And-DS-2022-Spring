@@ -4,7 +4,37 @@
 #include <vector>
 #include <algorithm>
 #include <queue>
+#include <stack>
 
+
+
+class OutBitStream {
+ public:
+	OutBitStream(): bits_count(0) {}
+
+	void WriteBit(unsigned char bit);
+	void WriteByte(unsigned char byte);
+
+	const std::vector<unsigned char>& GetBuffer() const { return buffer; }
+
+private:
+	std::vector<unsigned char> buffer;
+	size_t bits_count;
+};
+
+class InBitStream {
+ public:
+	InBitStream(std::vector<unsigned char>& _buffer): buffer(_buffer), bits_count(0) {}
+
+	unsigned char ReadBit();
+	unsigned char ReadByte();
+
+	const std::vector<unsigned char>& GetBuffer() const { return buffer; }
+
+private:
+	std::vector<unsigned char> buffer;
+	size_t bits_count;
+};
 
 
 class HaffmanCode {
@@ -40,11 +70,14 @@ class HaffmanCode {
 
 	Node* _root;
 	std::vector<std::vector<unsigned char>> table;
+	unsigned char char_count;
 
 	void delete_tree(Node* node);
 	void traverse(Node* node, std::vector<unsigned char>& code);
-};
 
+	void serialize_tree(Node* node, OutBitStream& stream);
+	void deserialize_tree(Node* node, InBitStream& stream);
+};
 
 
 void Encode(CInputStream& original, COutputStream& compressed) {
@@ -76,6 +109,7 @@ void HaffmanCode::build_tree(const std::vector<size_t>& bytes_freq) {
 			node->p = bytes_freq[i];
 
 			tree_builder.push(node);
+			++char_count;
 		}
 	}
 
@@ -120,7 +154,46 @@ void HaffmanCode::traverse(Node* node, std::vector<unsigned char>& code) {
 }
 
 std::vector<unsigned char> HaffmanCode::serialize() {
+	OutBitStream output;
+	output.WriteByte(char_count);
+	serialize_tree(_root, output);
+	return output.GetBuffer();
+}
 
+void HaffmanCode::serialize_tree(Node* node, OutBitStream& stream) {
+	if (node->left == nullptr && node->right == nullptr) {
+		stream.WriteBit(1);
+		stream.WriteByte(node->byte);
+		return;
+	}
+	serialize_tree(node->left, stream);
+	serialize_tree(node->right, stream);
+	stream.WriteBit(0);
+}
+
+void HaffmanCode::deserialize_tree(Node* node, InBitStream& stream) {
+	char_count = stream.ReadByte();
+	std::stack<Node*> tree_builder;
+
+	for (size_t read_count = 0; read_count < char_count;) {
+		if (stream.ReadBit() == 1) {
+			Node* new_node = new Node;
+			new_node->byte = stream.ReadByte();
+			tree_builder.push(new_node);
+			++read_count;
+		} else {
+			Node* first = tree_builder.top();
+			tree_builder.pop();
+
+			Node* second = tree_builder.top();
+			tree_builder.pop();
+
+			Node* new_node = new Node;
+			new_node->right = first;
+			new_node->left = second;
+			tree_builder.push(new_node);
+		}
+	}
 }
 
 
@@ -138,44 +211,58 @@ void HaffmanCode::delete_tree(Node* node) {
 }
 
 
-class OutBitStream {
-	OutBitStream(): bitsCount(0) {}
-
-	void WriteBit(unsigned char bit);
-	void WriteByte(unsigned char byte);
-
-	const std::vector<unsigned char>& GetBuffer() const { return buffer; }
-
-private:
-	std::vector<unsigned char> buffer;
-	size_t bitsCount;
-};
-
 void OutBitStream::WriteBit(unsigned char bit)
 {
-	if(bitsCount % 8 == 0) {
+	if(bits_count % 8 == 0) {
 		buffer.push_back(0);
 	}
 
 	if(bit != 0) {
-		size_t bitPos = bitsCount % 8;
-		buffer[bitsCount / 8] |= 1 << (7 - bitPos);
+		size_t bit_pos = bits_count % 8;
+		buffer[bits_count / 8] |= 1 << (7 - bit_pos);
 	}
 
-	++bitsCount;
+	++bits_count;
 }
 
 void OutBitStream::WriteByte(unsigned char byte)
 {
-	if(bitsCount % 8 == 0) {
+	if(bits_count % 8 == 0) {
 		buffer.push_back(byte);
 	} else {
-		size_t offset = bitsCount % 8;
-		buffer[bitsCount / 8] |= byte >> offset;
+		size_t offset = bits_count % 8;
+		buffer[bits_count / 8] |= byte >> offset;
 		buffer.push_back(byte << (8 - offset));
 	}
 
-	bitsCount += 8;
+	bits_count += 8;
+}
+
+
+unsigned char InBitStream::ReadBit() {
+	size_t bit_pos = bits_count % 8;
+	unsigned char bit = 0;
+	
+	bit |= (buffer[bits_count / 8] >> (7 - bit_pos)) & 1; 
+	++bits_count;
+	return bit;
+}
+
+unsigned char InBitStream::ReadByte() {
+	if (bits_count % 8 == 0) {
+		unsigned char byte = buffer[bits_count / 8];
+		bits_count += 8;
+		return byte;
+	}
+
+	size_t offset = bits_count % 8;
+	unsigned char byte = 0;
+
+	byte |= buffer[bits_count / 8] << offset;
+	bits_count += 8 - offset;
+	byte |= buffer[bits_count / 8] >> (8 - offset);
+	bits_count += offset;
+	return byte;
 }
 
 
@@ -202,5 +289,35 @@ int main() {
 			}
 		}
 		std::cout << "**********" << std::endl;
+		std::cout << std::endl;
+
+		std::cout << "***** Serialize tree test *****" << std::endl;
+
+		std::vector<unsigned char> serialized_tree = codes.serialize();
+		for (size_t i = 0; i < serialized_tree.size(); ++i) {
+			std::bitset<8> bits(serialized_tree[i]);
+			std::cout << bits << "|";
+		}
+		std::cout << std::endl;
+
+		std::cout << "**********" << std::endl;
+		std::cout << std::endl;
+
+		std::cout << "***** Read bit stream test *****" << std::endl;
+		InBitStream input(serialized_tree);
+		unsigned char count = input.ReadByte();
+		for (size_t ai = 0; ai < count;) {
+			if (input.ReadBit() == 1) {
+				unsigned char byte = input.ReadByte();
+				++ai;
+				std::cout << 1 << "|" << static_cast<int>(byte) << "|";
+			} else {
+				std::cout << 0 << "|";
+			}
+		}
+		std::cout << std::endl;
+
+		std::cout << "**********" << std::endl;
+		std::cout << std::endl;
 	}
 }
