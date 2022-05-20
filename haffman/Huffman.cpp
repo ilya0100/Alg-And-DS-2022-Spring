@@ -97,7 +97,19 @@ void Encode(CInputStream& original, COutputStream& compressed) {
 	code.build_tree(frequencies);
 	std::vector<unsigned char> tree = code.serialize();
 
-    compressed.Write(static_cast<unsigned char>(tree.size()));
+	// максимальный размер закодированного дерева равен 1.25 * 256(максимальное количество символов в алфавите)
+	// 1.25 * 256 = 320
+	// в таком случае можно записать в первый байт 255, а в следующий tree.size - 255
+	// При разкодировании можно посмотреть на первый бит второго байта и если он равен 0,
+	// то это значит, что в этом байте лежит остаток
+	// Если бит равен 1, то далее идет дерево
+	if (tree.size() > 255) {
+		compressed.Write(255);
+		compressed.Write(tree.size() - 255);
+	} else {
+		compressed.Write(static_cast<unsigned char>(tree.size()));
+	}
+
 	for (size_t i = 0; i < tree.size(); ++i) {
 		compressed.Write(tree[i]);
 	}
@@ -125,11 +137,21 @@ void Encode(CInputStream& original, COutputStream& compressed) {
 }
 
 void Decode(CInputStream& compressed, COutputStream& original) {
-    unsigned char tree_size = 0;
-    compressed.Read(tree_size);
+    unsigned char first_byte = 0;
+    unsigned char second_byte = 0;
+    compressed.Read(first_byte);
+	compressed.Read(second_byte);
 
+    int tree_size = 0;
     std::vector<unsigned char> tree;
-    for (unsigned char i = 0; i < tree_size; ++i) {
+	if ((second_byte & 128) == 0) {
+		tree_size = first_byte + second_byte;
+	} else {
+		tree_size = first_byte - 1;
+		tree.push_back(second_byte);
+	}
+
+    for (int i = 0; i < tree_size; ++i) {
         unsigned char byte;
         compressed.Read(byte);
         tree.push_back(byte);
@@ -211,7 +233,6 @@ void HaffmanCode::build_table(Node* node, std::vector<unsigned char>& code) {
 std::vector<unsigned char> HaffmanCode::serialize() {
 	OutBitStream output;
 	serialize_tree(_root, output);
-    output.write_bit(0);
 	return std::move(output.get_buffer());
 }
 
@@ -438,8 +459,8 @@ int main() {
 
         std::vector<unsigned char> test_data;
 		std::srand(10);
-        for (size_t i = 0; i < 50; ++i) {
-            test_data.push_back(std::rand() % 30);
+        for (size_t i = 0; i < 1000; ++i) {
+            test_data.push_back(std::rand() % 256);
         }
 
         CInputStream encode_in(test_data);
