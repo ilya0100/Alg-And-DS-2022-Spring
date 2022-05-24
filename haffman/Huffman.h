@@ -3,11 +3,13 @@
 
 
 class IInputStream {
-
+ public:
+	virtual bool Read( unsigned char& value );
 };
 
 class IOutputStream {
-
+ public:
+	virtual void Write( unsigned char value );
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -83,7 +83,7 @@ class HaffmanCode {
 };
 
 
-void Encode(CInputStream& original, COutputStream& compressed) {
+void Encode(IInputStream& original, IOutputStream& compressed) {
 	std::vector<size_t> frequencies(256);
 	std::vector<unsigned char> original_buffer;
 
@@ -133,10 +133,9 @@ void Encode(CInputStream& original, COutputStream& compressed) {
     for (size_t i = 0; i < compressed_buffer.size(); ++i) {
         compressed.Write(compressed_buffer[i]);
     }
-    // tree_size | tree | filling_size | data
 }
 
-void Decode(CInputStream& compressed, COutputStream& original) {
+void Decode(IInputStream& compressed, IOutputStream& original) {
     unsigned char first_byte = 0;
     unsigned char second_byte = 0;
     compressed.Read(first_byte);
@@ -360,128 +359,4 @@ unsigned char InBitStream::read_byte() {
 	byte |= buffer[bits_count / 8] >> (8 - offset);
 	bits_count += offset;
 	return byte;
-}
-
-
-
-
-int main() {
-	{
-		std::cout << "***** Tree and table test *****" << std::endl;
-
-		std::vector<size_t> frequencies(10);
-		std::srand(42);
-		for (unsigned char i = 0; i < 9; ++i) {
-			frequencies[i] = std::rand() % 10;
-		}
-		HaffmanCode encode;
-		encode.build_tree(frequencies);
-
-		std::vector<std::vector<unsigned char>> table = encode.get_table();
-		for (size_t i = 0; i < table.size(); ++i) {
-			if (table[i].size() != 0) {
-				std::cout << i << ": ";
-				for (size_t j = 0; j < table[i].size(); ++j) {
-					std::cout << static_cast<int>(table[i][j]) << " ";
-				}
-				std::cout << std::endl;
-			}
-		}
-		std::cout << "**********" << std::endl;
-		std::cout << std::endl;
-
-
-		std::cout << "***** Serialize tree test *****" << std::endl;
-
-		std::vector<unsigned char> serialized_tree = encode.serialize();
-		for (size_t i = 0; i < serialized_tree.size(); ++i) {
-			std::bitset<8> bits(serialized_tree[i]);
-			std::cout << bits << "|";
-		}
-		std::cout << std::endl;
-
-		std::cout << "**********" << std::endl;
-		std::cout << std::endl;
-
-
-		std::cout << "***** Deserialize tree test *****" << std::endl;
-
-		HaffmanCode decode;
-		decode.deserialize(serialized_tree);
-
-		std::vector<std::vector<unsigned char>> decoded_table = decode.get_table();
-		for (size_t i = 0; i < decoded_table.size(); ++i) {
-			if (decoded_table[i].size() != 0) {
-				std::cout << i << ": ";
-				for (size_t j = 0; j < decoded_table[i].size(); ++j) {
-					std::cout << static_cast<int>(decoded_table[i][j]) << " ";
-				}
-				std::cout << std::endl;
-			}
-		}
-
-		std::cout << "**********" << std::endl;
-		std::cout << std::endl;
-	}
-    {
-		std::cout << "***** Test1: *****" << std::endl;
-
-        std::string test_text = "Just text to test Haffman algorithm";
-        std::vector<unsigned char> buffer;
-        for (size_t i = 0; i < test_text.size(); ++i) {
-            buffer.push_back(test_text[i]);
-        }
-
-        CInputStream encode_in(buffer);
-        std::vector<unsigned char> temp;
-        COutputStream encode_out(temp);
-        Encode(encode_in, encode_out);
-
-        buffer = encode_out.get_body();
-        CInputStream decode_in(buffer);
-        COutputStream decode_out(temp);
-        Decode(decode_in, decode_out);
-
-        std::vector<unsigned char> decoded = decode_out.get_body();
-        std::string decoded_str;
-        for (size_t i = 0; i < decoded.size(); ++i) {
-            decoded_str.push_back(decoded[i]);
-        }
-
-        std::cout << decoded_str << std::endl;
-        std::cout << buffer.size() / encode_out.get_body().size() << std::endl;
-
-        assert(test_text == decoded_str);
-        std::cout << "***** Sucess *****\n" << std::endl;
-    }
-    {
-		std::cout << "***** Test2: *****" << std::endl;
-
-        std::vector<unsigned char> test_data;
-		std::srand(10);
-        for (size_t i = 0; i < 1000; ++i) {
-            test_data.push_back(std::rand() % 256);
-        }
-
-        CInputStream encode_in(test_data);
-        std::vector<unsigned char> temp;
-        COutputStream encode_out(temp);
-        Encode(encode_in, encode_out);
-
-        std::vector<unsigned char> buffer = encode_out.get_body();
-        CInputStream decode_in(buffer);
-        COutputStream decode_out(temp);
-        Decode(decode_in, decode_out);
-
-        std::vector<unsigned char> decoded = decode_out.get_body();
-        std::string decoded_str;
-        for (size_t i = 0; i < decoded.size(); ++i) {
-            decoded_str.push_back(decoded[i]);
-        }
-
-        std::cout << buffer.size() / encode_out.get_body().size() << std::endl;
-        assert(test_data == decoded);
-
-        std::cout << "***** Sucess *****\n" << std::endl;
-    }
 }

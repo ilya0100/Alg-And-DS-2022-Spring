@@ -40,6 +40,9 @@ class AVLTree {
     void del(const T& key);
 
     int find_pos(const T& key);
+    T find_on_pos(int pos) const;
+
+    int get_size() const { return _root->height; }
 
  private:
     struct TreeNode {
@@ -93,7 +96,9 @@ void run(std::istream& input, std::ostream& output) {
             break;
 
         case 2:
-            tree.del(elem);
+            if (elem < tree.get_size()) {
+                tree.del(tree.find_on_pos(elem));
+            }
             break;
 
         default:
@@ -158,7 +163,7 @@ void run_test() {
     {
         std::stringstream input;
         std::stringstream output;
-        input << "7 1 150 1 130 1 170 1 100 1 140 2 140 1 145";
+        input << "7 1 150 1 130 1 170 1 100 1 140 2 2 1 145";
         run(input, output);
 
         std::cout << "***** Test 5: *****" << std::endl;
@@ -171,7 +176,7 @@ void run_test() {
     {
         std::stringstream input;
         std::stringstream output;
-        input << "8 1 150 1 130 1 170 1 100 1 140 2 150 1 110 1 150";
+        input << "8 1 150 1 130 1 170 1 100 1 140 2 1 1 110 1 150";
         run(input, output);
 
         std::cout << "***** Test 6: *****" << std::endl;
@@ -217,6 +222,19 @@ void run_test() {
         std::cout << output.str() << std::endl;
 
         assert(output.str() == "0 1 1 2 3 4 ");
+
+        std::cout << "***** Sucess *****\n" << std::endl;
+    }
+    {
+        std::stringstream input;
+        std::stringstream output;
+        input << "15 1 41 1 18467 2 0 1 26500 1 19169 2 1 1 11478 1 29358 2 2 1 24464 1 5705 2 0 1 23281 1 16827 2 1";
+        run(input, output);
+
+        std::cout << "***** Test 9: *****" << std::endl;
+        std::cout << output.str() << std::endl;
+
+        assert(output.str() == "0 0 0 1 1 0 2 3 2 3 ");
 
         std::cout << "***** Sucess *****\n" << std::endl;
     }
@@ -383,4 +401,26 @@ int AVLTree<T, Compare>::find_pos(const T& key) {
         }
     }
     return pos;
+}
+
+template <typename T, typename Compare>
+T AVLTree<T, Compare>::find_on_pos(int pos) const {
+    if (_root == nullptr) {
+        return T();
+    }
+    TreeNode *temp = _root;
+    int curr_pos = temp->right != nullptr ? temp->right->nodes_count : 0;
+    while (curr_pos != pos) {
+        if (pos < curr_pos) {
+            temp = temp->right;
+        } else {
+            if (temp->left != nullptr) {
+                pos -= temp->right->nodes_count;
+            }
+            --pos;
+            temp = temp->left;
+        }
+        curr_pos = temp->right != nullptr ? temp->right->nodes_count : 0;
+    }
+    return temp->key;
 }

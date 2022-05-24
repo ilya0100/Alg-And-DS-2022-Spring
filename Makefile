@@ -1,6 +1,6 @@
 TARGET = ./task.out
-SRCS = ./haffman/Huffman.cpp
-HDRS = /haffman/Huffman.h
+SRCS = 4_1/4_1.cpp
+HDRS = .
 
 .PHONY: all check build run clean
 
