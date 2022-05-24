@@ -21,5 +21,5 @@ clean:
 	rm *.out
 
 memtest: build
-	valgrind $(TARGET)
+	valgrind --error-exitcode=1 $(TARGET)
 	rm *.out
