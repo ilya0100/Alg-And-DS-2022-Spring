@@ -1,25 +1,18 @@
-TARGET = ./task.out
-SRCS = 4_1/4_1.cpp
-HDRS = .
+.PHONY: all check build_tests run_tests clean
 
-.PHONY: all check build run clean
-
-all: check build run
+all: check build_tests memtest
 
 check:
-	./run_linters.sh $(SRCS)
+	./run_linters.sh
 
-build: $(TARGET)
+build_tests:
+	./build.sh
 
-$(TARGET): $(SRCS)
-	$(CXX) -std=c++17 -g -fdiagnostics-color -O0 -Wall -Wextra -I $(HDRS) -o $(TARGET) $(SRCS)
-
-run:
-	$(TARGET)
+run_tests:
+	./build/graphs/GraphsTests
 
 clean:
-	rm *.out
+	rm -rf build/
 
-memtest: build
-	valgrind --error-exitcode=1 $(TARGET)
-	rm *.out
+memtest: build_tests
+	valgrind --error-exitcode=1 ./build/graphs/GraphsTests
