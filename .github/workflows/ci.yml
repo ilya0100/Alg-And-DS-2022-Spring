@@ -1,0 +1,26 @@
+on: push
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Building
+        run : make build
+  
+  run: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run : make build && make run
+  
+  memtest: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check memory leaks
+        run : |
+          sudo apt-get install -y valgrind
+          make memtest
