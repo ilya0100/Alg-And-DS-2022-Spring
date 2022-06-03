@@ -9,10 +9,10 @@ build_tests:
 	./build.sh
 
 run_tests:
-	./build/graphs/GraphsTests
+	./build/GraphsTests
 
 clean:
 	rm -rf build/
 
 memtest: build_tests
-	valgrind --error-exitcode=1 ./build/graphs/GraphsTests
+	valgrind --error-exitcode=1 ./build/GraphsTests

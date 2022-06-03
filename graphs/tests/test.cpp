@@ -18,10 +18,12 @@ void bfs(const IGraph& graph, int vertex, std::function<void(int)> visit) {
     std::queue<int> bfsQueue;
     bfsQueue.push(vertex);
     visited[vertex] = true;
+
     while (bfsQueue.size() > 0) {
         int current = bfsQueue.front();
         bfsQueue.pop();
         visit(current);
+
         std::vector<int> adjList = graph.GetNextVertices(current);
         for (size_t i = 0; i < adjList.size(); ++i) {
             if (!visited[adjList[i]]) {
@@ -44,7 +46,7 @@ void fillGraph(IGraph& graph) {
 }
 
 
-TEST(GraphsCreate, BFS) {
+TEST(Graphs, BFS) {
     std::shared_ptr<IGraph> listGraph = std::make_shared<ListGraph>(ListGraph(6));
     std::shared_ptr<IGraph> matrixGraph = std::make_shared<MatrixGraph>(MatrixGraph(6));
     std::shared_ptr<IGraph> arcGraph = std::make_shared<ArcGraph>(ArcGraph(6));
@@ -85,4 +87,32 @@ TEST(GraphsCreate, BFS) {
     EXPECT_EQ(expectedResult, matrixBFS);
     EXPECT_EQ(expectedResult, arcBFS);
     EXPECT_EQ(expectedResult, setBFS);
+}
+
+TEST(Graphs, Convertation) {
+    std::shared_ptr<IGraph> listGraph = std::make_shared<ListGraph>(ListGraph(5));
+
+    listGraph->AddEdge(1, 2);
+    listGraph->AddEdge(3, 2);
+    listGraph->AddEdge(2, 1);
+    listGraph->AddEdge(4, 2);
+    listGraph->AddEdge(4, 3);
+    listGraph->AddEdge(0, 1);
+    listGraph->AddEdge(4, 0);
+
+    std::shared_ptr<IGraph> matrixGraph = std::make_shared<MatrixGraph>(*listGraph);
+    std::shared_ptr<IGraph> arcGraph = std::make_shared<ArcGraph>(*matrixGraph);
+    std::shared_ptr<IGraph> setGraph = std::make_shared<SetGraph>(*arcGraph);
+
+    EXPECT_EQ(listGraph->VerticesCount(), matrixGraph->VerticesCount());
+    EXPECT_EQ(matrixGraph->VerticesCount(), arcGraph->VerticesCount());
+    EXPECT_EQ(arcGraph->VerticesCount(), setGraph->VerticesCount());
+
+    EXPECT_EQ(listGraph->GetNextVertices(4).size(), matrixGraph->GetNextVertices(4).size());
+    EXPECT_EQ(matrixGraph->GetNextVertices(4).size(), arcGraph->GetNextVertices(4).size());
+    EXPECT_EQ(arcGraph->GetNextVertices(4).size(), setGraph->GetNextVertices(4).size());
+
+    EXPECT_EQ(listGraph->GetPrevVertices(2).size(), matrixGraph->GetPrevVertices(2).size());
+    EXPECT_EQ(matrixGraph->GetPrevVertices(2).size(), arcGraph->GetPrevVertices(2).size());
+    EXPECT_EQ(arcGraph->GetPrevVertices(2).size(), setGraph->GetPrevVertices(2).size());
 }

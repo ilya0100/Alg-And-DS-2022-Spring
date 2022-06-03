@@ -6,7 +6,7 @@ jobs:
     container: ilya0100/clang_hw
     steps:
       - uses: actions/checkout@v2
-      - run: make check
+      - run: cd graphs && make check
 
   build:
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
     needs: [check]
     steps:
     - uses: actions/checkout@v2
-    - run: make build_tests
+    - run: cd graphs && make build_tests
 
   test:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
     needs: [build]
     steps:
       - uses: actions/checkout@v2
-      - run: make build_tests && make run_tests
+      - run: cd graphs && make build_tests && make run_tests
 
   memtest:
     runs-on: ubuntu-latest
@@ -30,4 +30,4 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v2
-      - run: make memtest
+      - run: cd graphs && make memtest

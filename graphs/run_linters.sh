@@ -24,7 +24,7 @@ function check_log() {
 
 print_header "RUN cppcheck"
 check_log "cppcheck src tests --enable=all --inconclusive --error-exitcode=1 -I include --suppress=missingIncludeSystem \
-        --suppress=noExplicitConstructor --suppress=unusedFunction --suppress=useStlAlgorithm" "\(information\)"
+        --suppress=noExplicitConstructor --suppress=useStlAlgorithm" "\(information\)"
 
 print_header "RUN clang-tidy"
 check_log "clang-tidy src/* tests/* -warnings-as-errors=* -- -x c++ -Iinclude -std=c++17" "Error (?:reading|while processing)"
