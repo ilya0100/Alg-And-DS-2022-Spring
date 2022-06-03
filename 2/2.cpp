@@ -2,7 +2,6 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
-#include <unordered_set>
 
 
 
@@ -111,8 +110,8 @@ void run_tests() {
 
 
 int main() {
-    // run_tests();
-    run(std::cin, std::cout);
+    run_tests();
+    // run(std::cin, std::cout);
 }
 
 
