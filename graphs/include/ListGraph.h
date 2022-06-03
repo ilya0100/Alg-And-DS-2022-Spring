@@ -6,7 +6,7 @@
 
 class ListGraph : public IGraph {
  public:
-    ListGraph(size_t verticesCount);
+    ListGraph(std::size_t verticesCount);
 
     ListGraph(const IGraph& other);
     ListGraph& operator=(const IGraph& other);

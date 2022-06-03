@@ -8,7 +8,7 @@
 
 class SetGraph : public IGraph {
  public:
-    SetGraph(size_t verticesCount);
+    SetGraph(std::size_t verticesCount);
 
     SetGraph(const IGraph& other);
     SetGraph& operator=(const IGraph& other);

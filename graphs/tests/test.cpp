@@ -25,7 +25,7 @@ void bfs(const IGraph& graph, int vertex, std::function<void(int)> visit) {
         visit(current);
 
         std::vector<int> adjList = graph.GetNextVertices(current);
-        for (size_t i = 0; i < adjList.size(); ++i) {
+        for (std::size_t i = 0; i < adjList.size(); ++i) {
             if (!visited[adjList[i]]) {
                 bfsQueue.push(adjList[i]);
                 visited[adjList[i]] = true;

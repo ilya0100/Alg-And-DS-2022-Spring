@@ -1,7 +1,7 @@
 #include "SetGraph.h"
 
 
-SetGraph::SetGraph(size_t verticesCount) {
+SetGraph::SetGraph(std::size_t verticesCount) {
     hashTables.resize(verticesCount);
 }
 
@@ -43,7 +43,7 @@ std::vector<int> SetGraph::GetPrevVertices(int vertex) const {
     assert(vertex >= 0 && vertex < hashTables.size());
 
     std::vector<int> prevVertices;
-    for (size_t from = 0; from < hashTables.size(); ++from) {
+    for (std::size_t from = 0; from < hashTables.size(); ++from) {
         for (auto it : hashTables[from]) {
             if (it == vertex) {
                 prevVertices.push_back(from);

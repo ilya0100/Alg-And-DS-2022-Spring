@@ -1,7 +1,7 @@
 #include "MatrixGraph.h"
 
 
-MatrixGraph::MatrixGraph(size_t verticesCount)
+MatrixGraph::MatrixGraph(std::size_t verticesCount)
     : verticesMatrix(verticesCount, std::vector<int>(verticesCount, 0)) {}
 
 MatrixGraph::MatrixGraph(const IGraph& other)
@@ -34,7 +34,7 @@ std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {
     assert(vertex >= 0 && vertex < verticesMatrix.size());
 
     std::vector<int> nextVertices;
-    for (size_t j = 0; j < verticesMatrix.size(); ++j) {
+    for (std::size_t j = 0; j < verticesMatrix.size(); ++j) {
         if (verticesMatrix[vertex][j] == 1) {
             nextVertices.push_back(j);
         }
@@ -46,7 +46,7 @@ std::vector<int> MatrixGraph::GetPrevVertices(int vertex) const {
     assert(vertex >= 0 && vertex < verticesMatrix.size());
 
     std::vector<int> prevVertices;
-    for (size_t i = 0; i < verticesMatrix.size(); ++i) {
+    for (std::size_t i = 0; i < verticesMatrix.size(); ++i) {
         if (verticesMatrix[i][vertex] == 1) {
             prevVertices.push_back(i);
         }

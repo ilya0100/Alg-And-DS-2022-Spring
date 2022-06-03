@@ -6,7 +6,7 @@
 
 class MatrixGraph : public IGraph {
  public:
-    MatrixGraph(size_t verticesCount);
+    MatrixGraph(std::size_t verticesCount);
 
     MatrixGraph(const IGraph& other);
     MatrixGraph& operator=(const IGraph& other);

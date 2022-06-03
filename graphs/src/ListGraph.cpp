@@ -1,7 +1,7 @@
 #include "ListGraph.h"
 
 
-ListGraph::ListGraph(size_t verticesCount) {
+ListGraph::ListGraph(std::size_t verticesCount) {
     adjList.resize(verticesCount);
 }
 
@@ -37,8 +37,8 @@ std::vector<int> ListGraph::GetPrevVertices(int vertex) const {
     assert(vertex >= 0 && vertex < adjList.size());
 
     std::vector<int> prevVertices;
-    for (size_t from = 0; from < adjList.size(); ++from) {
-        for (size_t i  = 0; i < adjList[from].size(); ++i) {
+    for (std::size_t from = 0; from < adjList.size(); ++from) {
+        for (std::size_t i  = 0; i < adjList[from].size(); ++i) {
             if (adjList[from][i] == vertex) {
                 prevVertices.push_back(from);
                 break;

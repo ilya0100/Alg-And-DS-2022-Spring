@@ -7,7 +7,7 @@
 
 class ArcGraph : public IGraph {
  public:
-    ArcGraph(size_t verticesCount): maxVertex(verticesCount) {}
+    ArcGraph(std::size_t verticesCount): maxVertex(verticesCount) {}
 
     ArcGraph(const IGraph& other);
     ArcGraph& operator=(const IGraph& other);
