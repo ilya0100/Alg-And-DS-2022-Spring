@@ -15,30 +15,18 @@ ArcGraph& ArcGraph::operator=(const IGraph& other) {
 }
 
 void ArcGraph::AddEdge(int from, int to) {
-    assert(from > 0 && from < maxVertex);
-    assert(to > 0 && to < maxVertex);
+    assert(from >= 0 && from < maxVertex);
+    assert(to >= 0 && to < maxVertex);
 
     edges.push_back({from, to});
 }
 
 int ArcGraph::VerticesCount() const {
-    int count = 0;
-    std::vector<bool> visited(maxVertex, false);
-    for (auto edge : edges) {
-        if (!visited[edge.first]) {
-            ++count;
-            visited[edge.first] = true;
-        }
-        if (!visited[edge.second]) {
-            ++count;
-            visited[edge.second] = true;
-        }
-    }
-    return count;
+    return maxVertex;
 }
 
 std::vector<int> ArcGraph::GetNextVertices(int vertex) const {
-    assert(vertex > 0 && vertex < maxVertex);
+    assert(vertex >= 0 && vertex < maxVertex);
 
     std::vector<int> nextVertices;
     for (auto edge : edges) {
@@ -50,7 +38,7 @@ std::vector<int> ArcGraph::GetNextVertices(int vertex) const {
 }
 
 std::vector<int> ArcGraph::GetPrevVertices(int vertex) const {
-    assert(vertex > 0 && vertex < maxVertex);
+    assert(vertex >= 0 && vertex < maxVertex);
 
     std::vector<int> prevVertices;
     for (auto edge : edges) {

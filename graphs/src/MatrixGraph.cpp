@@ -20,8 +20,8 @@ MatrixGraph& MatrixGraph::operator=(const IGraph& other) {
 }
 
 void MatrixGraph::AddEdge(int from, int to) {
-    assert(from > 0 && from < verticesMatrix.size());
-    assert(to > 0 && to < verticesMatrix.size());
+    assert(from >= 0 && from < verticesMatrix.size());
+    assert(to >= 0 && to < verticesMatrix.size());
 
     verticesMatrix[from][to] = 1;
 }
@@ -31,7 +31,7 @@ int MatrixGraph::VerticesCount() const {
 }
 
 std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {
-    assert(vertex > 0 && vertex < verticesMatrix.size());
+    assert(vertex >= 0 && vertex < verticesMatrix.size());
 
     std::vector<int> nextVertices;
     for (size_t j = 0; j < verticesMatrix.size(); ++j) {
@@ -43,7 +43,7 @@ std::vector<int> MatrixGraph::GetNextVertices(int vertex) const {
 }
 
 std::vector<int> MatrixGraph::GetPrevVertices(int vertex) const {
-    assert(vertex > 0 && vertex < verticesMatrix.size());
+    assert(vertex >= 0 && vertex < verticesMatrix.size());
 
     std::vector<int> prevVertices;
     for (size_t i = 0; i < verticesMatrix.size(); ++i) {

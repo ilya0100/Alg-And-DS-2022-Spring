@@ -5,7 +5,7 @@
 
 
 class MatrixGraph : public IGraph {
-public:
+ public:
     MatrixGraph(size_t verticesCount);
 
     MatrixGraph(const IGraph& other);
@@ -18,6 +18,6 @@ public:
     std::vector<int> GetNextVertices(int vertex) const  override;
     std::vector<int> GetPrevVertices(int vertex) const override;
 
-private:
+ private:
     std::vector<std::vector<int>> verticesMatrix;
 };

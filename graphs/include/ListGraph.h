@@ -5,7 +5,7 @@
 
 
 class ListGraph : public IGraph {
-public:
+ public:
     ListGraph(size_t verticesCount);
 
     ListGraph(const IGraph& other);
@@ -18,6 +18,6 @@ public:
     std::vector<int> GetNextVertices(int vertex) const  override;
     std::vector<int> GetPrevVertices(int vertex) const override;
 
-private:
+ private:
     std::vector<std::vector<int>> adjList;
 };

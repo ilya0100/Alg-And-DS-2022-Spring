@@ -18,8 +18,8 @@ ListGraph& ListGraph::operator=(const IGraph& other) {
 }
 
 void ListGraph::AddEdge(int from, int to) {
-    assert(from > 0 && from < adjList.size());
-    assert(to > 0 && to < adjList.size());
+    assert(from >= 0 && from < adjList.size());
+    assert(to >= 0 && to < adjList.size());
 
     adjList[from].push_back(to);
 }
@@ -29,12 +29,12 @@ int ListGraph::VerticesCount() const {
 }
 
 std::vector<int> ListGraph::GetNextVertices(int vertex) const {
-    assert(vertex > 0 && vertex < adjList.size());
+    assert(vertex >= 0 && vertex < adjList.size());
     return adjList[vertex];
 }
 
 std::vector<int> ListGraph::GetPrevVertices(int vertex) const {
-    assert(vertex > 0 && vertex < adjList.size());
+    assert(vertex >= 0 && vertex < adjList.size());
 
     std::vector<int> prevVertices;
     for (size_t from = 0; from < adjList.size(); ++from) {

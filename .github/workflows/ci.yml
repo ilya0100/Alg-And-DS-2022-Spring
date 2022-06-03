@@ -1,26 +1,33 @@
 on: push
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: ilya0100/clang_hw
+    steps:
+      - uses: actions/checkout@v2
+      - run: make check
 
   build:
     runs-on: ubuntu-latest
+    container: ilya0100/clang_hw
+    needs: [check]
     steps:
-      - uses: actions/checkout@v2
-      - name: Building
-        run : make build
-  
-  run: 
+    - uses: actions/checkout@v2
+    - run: make build_tests
+
+  test:
     runs-on: ubuntu-latest
+    container: ilya0100/clang_hw
+    needs: [build]
     steps:
       - uses: actions/checkout@v2
-      - name: Run tests
-        run : make build && make run
-  
-  memtest: 
+      - run: make build_tests && make run_tests
+
+  memtest:
     runs-on: ubuntu-latest
+    container: ilya0100/clang_hw
+    needs: [test]
     steps:
       - uses: actions/checkout@v2
-      - name: Check memory leaks
-        run : |
-          sudo apt-get install -y valgrind
-          make memtest
+      - run: make memtest
